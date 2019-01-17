@@ -1,0 +1,44 @@
+@startuml
+interface InstanceRepository {
+      +  Future[Instance] create(String name, String plan, String state, String targetId)
+      +  Future[Int] createOrUpdate(Instance instance)
+      +  Future[Int] delete(Long id)
+      +  Future[Option[Instance]] get(Long id)
+      +  Future[Seq[Instance]] getAll()
+}
+
+interface TokenRepository {
+      + Future[Option[Token]] get(String value)
+}
+
+class Instance {
+    + Long id: Long
+    + String name
+    + String plan
+    + String state
+    + String targetId
+    + Timestamp created
+    + Timestamp updated
+}
+
+class Token {
+    + Long id
+    + String value
+}
+
+class TimeUtils {
+  + Timestamp now()
+}
+
+class InstanceSlickRepository
+
+class TokenSlickRepository
+
+InstanceRepository <|-- InstanceSlickRepository
+TokenRepository <|-- TokenSlickRepository
+
+Instance *-- InstanceRepository
+Token *-- TokenRepository
+
+TimeUtils *-- InstanceSlickRepository
+@enduml

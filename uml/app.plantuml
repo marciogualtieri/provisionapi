@@ -1,0 +1,31 @@
+@startuml
+
+class ProvisionApiController
+
+interface AmazonInstanceProvisioner
+
+class InstanceProvisioner {
+  + Future[(String, String)] create(String name, String plan)
+  + Future[Boolean] delete(String targetId)
+  + Future[String] get(String targetId)
+}
+
+class TokenSlickRepository
+
+class InstanceSlickRepository
+
+class AuthenticationUserAction
+
+class TimeUtils {
+  + Timestamp now()
+}
+
+InstanceProvisioner <|-- AmazonInstanceProvisioner
+
+AmazonInstanceProvisioner *-- ProvisionApiController
+InstanceSlickRepository *-- ProvisionApiController
+TokenSlickRepository *-- ProvisionApiController
+AuthenticationUserAction *-- ProvisionApiController
+
+TimeUtils *-- InstanceSlickRepository
+@enduml

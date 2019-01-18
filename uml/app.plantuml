@@ -2,9 +2,9 @@
 
 class ProvisionApiController
 
-interface AmazonInstanceProvisioner
+class AmazonInstanceProvisioner
 
-class InstanceProvisioner {
+interface InstanceProvisioner {
   + Future[(String, String)] create(String name, String plan)
   + Future[Boolean] delete(String targetId)
   + Future[String] get(String targetId)

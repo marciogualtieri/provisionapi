@@ -8,8 +8,7 @@
     - [Storing State and Tokens](#storing-state-and-tokens)
     - [Authentication](#authentication)
   - [Running Tests](#running-tests)
-  - [Running the App](#running-the-app)
-  - [Developers's Guide](#developerss-guide)
+  - [Deployment Guide](#deployment-guide)
     - [Configuration](#configuration)
     - [etcd](#etcd)
       - [Installing](#installing)
@@ -20,6 +19,7 @@
       - [Installing](#installing-1)
       - [Building a Template](#building-a-template)
       - [Testing](#testing-1)
+  - [Running the App](#running-the-app)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
 
@@ -41,7 +41,15 @@ For more detailed information on the requirements, refer to [this document](http
 
 ## Design
 
-![Data Repository Class Diagram](http://www.plantuml.com/plantuml/proxy?cache=no&src=https://raw.githubusercontent.com/marciogualtieri/provisionapi/master/uml/app.plantuml)
+<!---
+Plant UML Diagrams only work if the repository is public
+-->
+
+<!---
+[comment]: <> (![Data Repository Class Diagram](http://www.plantuml.com/plantuml/proxy?cache=no&src=https://raw.githubusercontent.com/marciogualtieri/provisionapi/master/uml/app.plantuml))
+-->
+
+![Data Repository Class Diagram](images/app_class_diagram.png)
 
 The Play Framework follows a MVC pattern, but given that we are only implementing the back-end, there's no view, only a model and a controller.
 
@@ -49,7 +57,7 @@ The model is represented by the repository classes in the diagram.
 
 Note also the provisioning class `AmazonInstanceProvisioner`, which encapsulates the functionality required to interact with Amazon Web Services.
 
-This class implements the interface `InstanceProvisioner` and uses [AWS SDK Java](https://aws.amazon.com/sdk-for-java/), specifically the EC2 client.
+This class implements the interface `InstanceProvisioner` and uses the [Java AWS SDK](https://aws.amazon.com/sdk-for-java/), specifically the EC2 client.
 
 ### Storing State and Tokens
 
@@ -61,19 +69,23 @@ This makes easier to migrate to a real database, which at the end of the day, is
 
 Here's a class diagram detailing the implementation of the model (repository classes):
 
-![Data Repository Class Diagram](http://www.plantuml.com/plantuml/proxy?cache=no&src=https://raw.githubusercontent.com/marciogualtieri/provisionapi/master/uml/database.plantuml)
+<!---
+Plant UML Diagrams only work if the repository is public
+-->
+
+<!---
+[comment]: <> ((![Data Repository Class Diagram](http://www.plantuml.com/plantuml/proxy?cache=no&src=https://raw.githubusercontent.com/marciogualtieri/provisionapi/master/uml/database.plantuml))
+-->
+
+![Data Repository Class Diagram](images/database_class_diagram.png)
 
 Note `TimeUtils`, which is required to make `InstanceSlickRepository` testable. Decoupling time keeping functionality makes possible to mock timestamps in the unit tests.
 
 ### Authentication
 
-Authentication has been implemented using [Play Framework's Actions](https://www.playframework.com/documentation/2.6.x/ScalaActions).
+Authentication has been implemented using [Play Framework's Actions](https://www.playframework.com/documentation/2.6.x/ScalaActions). At the moment, authentication consists of a simple action that simples verifies the presence of a valid token in the header (field `X-AUTH`).
 
-At the moment, authentication consists of a simple action that simples verifies the presence of a valid token in the header (field `X-AUTH`).
-
-Authentication tokens, as mentioned in the previous section, are stored in the database (`token` table).
-
-I'm using [evolution scripts](evolutions/default) to initialize the database with a single valid token, which is also used in the unit tests.
+Authentication tokens, as mentioned in the previous section, are stored in the database (`TokenSlickRepository`). I'm using [evolution scripts](evolutions/default) to initialize the database with a single valid token, which is also used in the unit tests.
 
 ## Running Tests
 
@@ -111,26 +123,7 @@ You should get an output similar to the following:
     [info] Passed: Total 15, Failed 0, Errors 0, Passed 15
     [success] Total time: 67 s, completed 17-Jan-2019 08:03:47
 
-## Running the App
-
-To provision an instance:
-
-    curl -XPOST -H "Content-Type: application/json" -H "X-AUTH: bWFyY2lvZ3VhbHRpZXJpOmRkamtsbXJydmN2Y3VpbzQzNA==" -d "{\"name\":\"Test Instance\",\"plan\":\"T2Micro\"}"  http://localhost:9000/databases
-
-To list all available instances:
-
-    curl -s -H "X-AUTH: bWFyY2lvZ3VhbHRpZXJpOmRkamtsbXJydmN2Y3VpbzQzNA==" -XGET http://localhost:9000/databases
-
-To list a particular instance:
-
-    curl -s -H "X-AUTH: bWFyY2lvZ3VhbHRpZXJpOmRkamtsbXJydmN2Y3VpbzQzNA==" -XGET http://localhost:9000/databases/1
-
-To de-provision an instance:
-
-    curl -XDELETE -H "Content-Type: application/json" -H "X-AUTH: bWFyY2lvZ3VhbHRpZXJpOmRkamtsbXJydmN2Y3VpbzQzNA==" http://localhost:9000/databases/1
-
-
-## Developers's Guide
+## Deployment Guide
 
 ### Configuration
 
@@ -182,11 +175,13 @@ You should get an output similar to the following:
 
 To create a key, execute the following command:
 
-    $ curl http://localhost:2379/v2/keys/MyKey -XPUT -d value="MyValueForMyKey"
+    $ curl http://localhost:2379/v2/keys/MyKey -XPUT \
+    -d value="MyValueForMyKey"
 
 You should get an output similar to the following:
 
-    {"action":"set","node":{"key":"/MyKey","value":"MyValueForMyKey","modifiedIndex":4,"createdIndex":4}}
+    {"action":"set","node":{"key":"/MyKey","value":"MyValueForMyKey",
+    "modifiedIndex":4,"createdIndex":4}}
 
 To retrieve the key you've just created, execute the following command:
 
@@ -194,15 +189,20 @@ To retrieve the key you've just created, execute the following command:
 
 You should get an output similar to the following:
 
-    {"action":"get","node":{"key":"/MyKey","value":"MyValueForMyKey","modifiedIndex":4,"createdIndex":4}}
+    {"action":"get","node":{"key":"/MyKey","value":"MyValueForMyKey",
+    "modifiedIndex":4,"createdIndex":4}}
 
 To change the key's value, execute the following command:
 
-    $ curl http://localhost:2379/v2/keys/msg -XPUT -d value="MyNewValueForMyKey”
+    $ curl http://localhost:2379/v2/keys/msg -XPUT \
+    -d value="MyNewValueForMyKey”
 
 You should get an output similar to the following:
 
-    $ {"action":"set","node":{"key":"/MyKey","value":"MyNewValueForMyKey","modifiedIndex":5,"createdIndex":5},"prevNode":{"key":"/MyKey","value":"MyValueForMyKey","modifiedIndex":4,"createdIndex":4}}
+    {"action":"set","node":{"key":"/MyKey","value":"MyNewValueForMyKey",
+    "modifiedIndex":5,"createdIndex":5},
+    "prevNode":{"key":"/MyKey","value":"MyValueForMyKey",
+    "modifiedIndex":4,"createdIndex":4}}
 
 To delete the key, execute the following command:
 
@@ -210,7 +210,9 @@ To delete the key, execute the following command:
 
 You should get an output similar to the following:
 
-    {"action":"delete","node":{"key":"/MyKey","modifiedIndex":6,"createdIndex":5},"prevNode":{"key":"/MyKey","value":"MyNewValueForMyKey","modifiedIndex":5,"createdIndex":5}}
+    {"action":"delete","node":{"key":"/MyKey","modifiedIndex":6,
+    "createdIndex":5},"prevNode":{"key":"/MyKey",
+    "value":"MyNewValueForMyKey","modifiedIndex":5,"createdIndex":5}}
 
 
 #### Creating a Service (single-node)
@@ -324,3 +326,56 @@ You may test your AMI by launching an EC2 instance from it and [connecting to it
 You will need a key pair (under `NETWORK & SECURITY > Key Pairs` on the console to SSH connect to it) and a security group (under `NETWORK & SECURITY > Security Groups` on the console to allow the required ports) for this purpose.
 
 ![AWS Console Security Group](images/amazon_security_group.png)
+
+## Running the App
+
+To start the app, execute the following command-line on a terminal:
+
+    $ sbt run
+
+Follow next some http calls that may be used to test the app.
+
+To provision an instance:
+
+    curl -XPOST -H "Content-Type: application/json" \
+    -H "X-AUTH: bWFyY2lvZ3VhbHRpZXJpOmRkamtsbXJydmN2Y3VpbzQzNA==" \
+    -d "{\"name\":\"Test Instance\",\"plan\":\"T2Micro\"}"  \
+    http://localhost:9000/databases
+
+You should get an output similar to the following:
+
+    {"id":1,"name":"Test Instance","plan":"T2Micro","state":"pending",
+    "targetId":"i-05604590c6c789a5f",
+    "created":"2019-01-17T10:19:41.156Z","updated":"2019-01-17T10:19:41.156Z"}
+
+To list all available instances:
+
+    curl -s -H "X-AUTH: bWFyY2lvZ3VhbHRpZXJpOmRkamtsbXJydmN2Y3VpbzQzNA==" \
+    -XGET http://localhost:9000/databases
+
+You should get an output similar to the following:
+
+    [{"id":1,"name":"Test Instance","plan":"T2Micro"},
+    {"id":2,"name":"Another Test Instance","plan":"T2Micro"}]
+
+To list a particular instance:
+
+    curl -s -H "X-AUTH: bWFyY2lvZ3VhbHRpZXJpOmRkamtsbXJydmN2Y3VpbzQzNA==" \
+    -XGET http://localhost:9000/databases/1
+
+You should get an output similar to the following:
+
+    {"id":1,"name":"Test Instance","plan":"T2Micro","state":"running",
+    "targetId":"i-05604590c6c789a5f",
+    "created":"2019-01-17T10:19:41.156Z",
+    "updated":"2019-01-17T10:19:41.156Z"}
+
+To de-provision an instance:
+
+    curl -XDELETE -H "Content-Type: application/json" \
+    -H "X-AUTH: bWFyY2lvZ3VhbHRpZXJpOmRkamtsbXJydmN2Y3VpbzQzNA==" \
+    http://localhost:9000/databases/1
+
+You should get an output similar to the following:
+
+    ID=[1] DELETED.

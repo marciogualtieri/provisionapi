@@ -37,7 +37,7 @@ The API also allows listing all available instances, as well as, instances indiv
 
 The instances are created from an AMI template, which needs to be deployed previously to deploying and running the app (refer to the `Deployment Guide > Packer` section).
 
-For more detailed information on the requirements, refer to [this document](https://gist.github.com/juanjoandres/96fffc4ae20af9fe0884cca0d24e6d2a).
+For more detailed information on the requirements, refer to [this document](./requirements/test.org).
 
 ## Design
 
